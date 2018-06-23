@@ -1,5 +1,5 @@
 textHeight = 16; --change this if the text doesn't print out properly
-version = "SNES"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
+version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
 while true do
@@ -58,6 +58,7 @@ end
 	c1BM = c1MagM + c1AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
 	c1CM = c1StrM + c1AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
 	c1FM = math.floor((c1StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
+	c1CanM = math.floor((c1Lvl * c1Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
 
 	--(strM+1 * 128) / Str to get next level
 	--(strM_1 * 128) / lvl to get next str
@@ -77,6 +78,7 @@ end
 	c2BM = c2MagM + c2AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
 	c2CM = c2StrM + c2AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
 	c2FM = math.floor((c2StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
+	c2CanM = math.floor((c2Lvl * c2Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
 
 	c2NextPart = (c2StrM + 1)*128;
 	c2NextLevel = math.ceil(c2NextPart / c2Str);
@@ -94,6 +96,7 @@ end
 	c3BM = c3MagM + c3AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
 	c3CM = c3StrM + c3AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
 	c3FM = math.floor((c3StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
+	c3CanM = math.floor((c3Lvl * c3Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
 
 	--(strM+1 * 128) / Str to get next level
 	--(strM_1 * 128) / lvl to get next str
@@ -113,6 +116,7 @@ end
 	c4BM = c4MagM + c4AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
 	c4CM = c4StrM + c4AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
 	c4FM = math.floor((c4StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
+	c4CanM = math.floor((c4Lvl * c4Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
 
 	--(strM+1 * 128) / Str to get next level
 	--(strM_1 * 128) / lvl to get next str
@@ -120,16 +124,32 @@ end
 	c4NextLevel = math.ceil(c4NextPart / c4Str);
 	c4NextStrength = math.ceil(c4NextPart / c4Lvl);
 
-	gui.text(0,textHeight*1,"Char 1: Phys: " .. c1PM .. " Mag: " .. c1MM .. " Knife: " .. c1KM .. " Bell: " .. c1BM .. " CK: " ..c1CM .. " Brawl: " .. c1FM);
+	if version == "GBA-US" then
+		gui.text(0,textHeight*1,"Char 1: Phys: " .. c1PM .. " Mag: " .. c1MM .. " Knife: " .. c1KM .. " Bell: " .. c1BM .. " CK: " ..c1CM .. " Brawl: " .. c1FM .. " Cannon: " .. c1CanM);	
+	else
+		gui.text(0,textHeight*1,"Char 1: Phys: " .. c1PM .. " Mag: " .. c1MM .. " Knife: " .. c1KM .. " Bell: " .. c1BM .. " CK: " ..c1CM .. " Brawl: " .. c1FM);
+	end
 	gui.text(0,textHeight*2,"Next at level: +" .. c1NextLevel-c1Lvl .. "(" .. c1NextLevel .. ") or str +" .. c1NextStrength-c1Str .. "(" .. c1NextStrength .. ")");
 
-	gui.text(0,textHeight*4,"Char 2: Phys: " .. c2PM .. " Mag: " .. c2MM .. " Knife: " .. c2KM .. " Bell: " .. c2BM .. " CK: " ..c2CM .. " Brawl: " .. c2FM);
+	if version == "GBA-US" then
+		gui.text(0,textHeight*4,"Char 2: Phys: " .. c2PM .. " Mag: " .. c2MM .. " Knife: " .. c2KM .. " Bell: " .. c2BM .. " CK: " ..c2CM .. " Brawl: " .. c2FM .. " Cannon: " .. c2CanM);
+	else
+		gui.text(0,textHeight*4,"Char 2: Phys: " .. c2PM .. " Mag: " .. c2MM .. " Knife: " .. c2KM .. " Bell: " .. c2BM .. " CK: " ..c2CM .. " Brawl: " .. c2FM);
+	end
 	gui.text(0,textHeight*5,"Next at level: +" .. c2NextLevel-c2Lvl .. "(" .. c2NextLevel .. ") or str +" .. c2NextStrength-c2Str .. "(" .. c2NextStrength .. ")");
 
-	gui.text(0,textHeight*7,"Char 3: Phys: " .. c3PM .. " Mag: " .. c3MM .. " Knife: " .. c3KM .. " Bell: " .. c3BM .. " CK: " ..c3CM .. " Brawl: " .. c3FM);
+	if version == "GBA-US" then
+		gui.text(0,textHeight*7,"Char 3: Phys: " .. c3PM .. " Mag: " .. c3MM .. " Knife: " .. c3KM .. " Bell: " .. c3BM .. " CK: " ..c3CM .. " Brawl: " .. c3FM .. " Cannon: " .. c3CanM);
+	else
+		gui.text(0,textHeight*7,"Char 3: Phys: " .. c3PM .. " Mag: " .. c3MM .. " Knife: " .. c3KM .. " Bell: " .. c3BM .. " CK: " ..c3CM .. " Brawl: " .. c3FM);
+	end
 	gui.text(0,textHeight*8,"Next at level: +" .. c3NextLevel-c3Lvl .. "(" .. c3NextLevel .. ") or str +" .. c3NextStrength-c3Str .. "(" .. c3NextStrength .. ")");
 
-	gui.text(0,textHeight*10,"Char 4: Phys: " .. c4PM .. " Mag: " .. c4MM .. " Knife: " .. c4KM .. " Bell: " .. c4BM .. " CK: " ..c4CM .. " Brawl: " .. c4FM);
+	if version == "GBA-US" then
+		gui.text(0,textHeight*10,"Char 4: Phys: " .. c4PM .. " Mag: " .. c4MM .. " Knife: " .. c4KM .. " Bell: " .. c4BM .. " CK: " ..c4CM .. " Brawl: " .. c4FM .. " Cannon: " .. c4CanM);
+	else
+		gui.text(0,textHeight*10,"Char 4: Phys: " .. c4PM .. " Mag: " .. c4MM .. " Knife: " .. c4KM .. " Bell: " .. c4BM .. " CK: " ..c4CM .. " Brawl: " .. c4FM);
+	end
 	gui.text(0,textHeight*11,"Next at level: +" .. c4NextLevel-c4Lvl .. "(" .. c4NextLevel .. ") or str +" .. c4NextStrength-c4Str .. "(" .. c4NextStrength .. ")");
 
 	emu.frameadvance();
