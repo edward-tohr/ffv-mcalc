@@ -2,155 +2,434 @@ textHeight = 16; --change this if the text doesn't print out properly
 version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
-while true do
-	-- Memory addresses for GBA US version. Change these for different versions.
-	if version == "GBA-US" then
-	c1Str = memory.readbyte(0x0200DAEE);
-	c1Agi = memory.readbyte(0x0200DAEF);
-	c1Mag = memory.readbyte(0x0200DAF1);
-	c1Lvl = memory.readbyte(0x0200DABE);
 
-	c2Str = memory.readbyte(0x0200DB52);
-	c2Agi = memory.readbyte(0x0200DB53);
-	c2Mag = memory.readbyte(0x0200DB55);
-	c2Lvl = memory.readbyte(0x0200DB22);
-
-	c3Str = memory.readbyte(0x0200DBB6);
-	c3Agi = memory.readbyte(0x0200DBB7);
-	c3Mag = memory.readbyte(0x0200DBB9);
-	c3Lvl = memory.readbyte(0x0200DB86);
-
-	c4Str = memory.readbyte(0x0200DC1A);
-	c4Agi = memory.readbyte(0x0200DC1B);
-	c4Mag = memory.readbyte(0x0200DC1D);
-	c4Lvl = memory.readbyte(0x0200DBEA);
-
-	elseif version == "SNES" then
-	c1Str = memory.readbyte(0x0528);
-	c1Agi = memory.readbyte(0x0529);
-	c1Mag = memory.readbyte(0x052B);
-	c1Lvl = memory.readbyte(0x0502);
-
-	c2Str = memory.readbyte(0x0552);
-	c2Agi = memory.readbyte(0x0578);
-	c2Mag = memory.readbyte(0x0579);
-	c2Lvl = memory.readbyte(0x057B);
-
-	c3Str = memory.readbyte(0x05C8);
-	c3Agi = memory.readbyte(0x05C9);
-	c3Mag = memory.readbyte(0x05CB);
-	c3Lvl = memory.readbyte(0x05A2);
-
-	c4Str = memory.readbyte(0x0618);
-	c4Agi = memory.readbyte(0x0619);
-	c4Mag = memory.readbyte(0x061B);
-	c4Lvl = memory.readbyte(0x05F2);
-end 
+-- Here there be coding horrors. Yarr!
 
 
-	c1AgiPart = math.floor((c1Agi % 256)/128); -- Used for bugged knife calc
-	c1StrM = math.floor((c1Str*c1Lvl)/128); --lvl*str/128
-	c1MagM = math.floor((c1Mag*c1Lvl)/128); --lvl*mag/128
-	c1AgiM = math.floor((c1Agi*c1Lvl)/128); --lvl*agi/128
-	c1PM = c1StrM + 2; --Physical attack M, ((lvl*str)/128)+2
-	c1MM = math.floor((c1MagM/2)) +4; --Magic attack M, ((lvl*mag)/256)+4
-	c1KM = c1PM + c1AgiPart; --Knife/Bow M, ((lvl*str)/128) + (((lvl*agi)%256)/128) +2, or Phys M + (agiPart/128)
-	c1BM = c1MagM + c1AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
-	c1CM = c1StrM + c1AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
-	c1FM = math.floor((c1StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
-	c1CanM = math.floor((c1Lvl * c1Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
+	-- Initial variable setup.
+	mag = false;
+	knife = true;
+	bell = false;
+	brawl = false;
+	cannon = false;
+	rune = false;
+	abl2 = false;
+	abl3 = false;
+	strings = {};
 
-	--(strM+1 * 128) / Str to get next level
-	--(strM_1 * 128) / lvl to get next str
-	c1NextPart = (c1StrM + 1)*128;
-	c1NextLevel = math.ceil(c1NextPart / c1Str);
-	c1NextStrength = math.ceil(c1NextPart / c1Lvl);
-
-
+	chars = {};
+	for i=1,4 do
+		chars[i] = {}
+		for j=1,8 do
+			chars[i][j] = false; --Fill the array with false, only display what is needed.
+		end
+	end
+	-- set up table of memory addresses.
+	addresses = {};
 	
-	c2AgiPart = math.floor((c2Agi % 256)/128); -- Used for bugged knife calc
-	c2StrM = math.floor((c2Str*c2Lvl)/128); --lvl*str/128
-	c2MagM = math.floor((c2Mag*c2Lvl)/128); --lvl*mag/128
-	c2AgiM = math.floor((c2Agi*c2Lvl)/128); --lvl*agi/128
-	c2PM = c2StrM + 2; --Physical attack M, ((lvl*str)/128)+2
-	c2MM = math.floor((c2MagM/2)) +4; --Magic attack M, ((lvl*mag)/256)+4
-	c2KM = c2PM + c2AgiPart; --Knife/Bow M, ((lvl*str)/128) + (((lvl*agi)%256)/128) +2, or Phys M + (agiPart/128)
-	c2BM = c2MagM + c2AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
-	c2CM = c2StrM + c2AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
-	c2FM = math.floor((c2StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
-	c2CanM = math.floor((c2Lvl * c2Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
-
-	c2NextPart = (c2StrM + 1)*128;
-	c2NextLevel = math.ceil(c2NextPart / c2Str);
-	c2NextStrength = math.ceil(c2NextPart / c2Lvl);
-
-
-
-	c3AgiPart = math.floor((c3Agi % 256)/128); -- Used for bugged knife calc
-	c3StrM = math.floor((c3Str*c3Lvl)/128); --lvl*str/128
-	c3MagM = math.floor((c3Mag*c3Lvl)/128); --lvl*mag/128
-	c3AgiM = math.floor((c3Agi*c3Lvl)/128); --lvl*agi/128
-	c3PM = c3StrM + 2; --Physical attack M, ((lvl*str)/128)+2
-	c3MM = math.floor((c3MagM/2)) +4; --Magic attack M, ((lvl*mag)/256)+4
-	c3KM = c3PM + c3AgiPart; --Knife/Bow M, ((lvl*str)/128) + (((lvl*agi)%256)/128) +2, or Phys M + (agiPart/128)
-	c3BM = c3MagM + c3AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
-	c3CM = c3StrM + c3AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
-	c3FM = math.floor((c3StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
-	c3CanM = math.floor((c3Lvl * c3Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
-
-	--(strM+1 * 128) / Str to get next level
-	--(strM_1 * 128) / lvl to get next str
-	c3NextPart = (c3StrM + 1)*128;
-	c3NextLevel = math.ceil(c3NextPart / c3Str);
-	c3NextStrength = math.ceil(c3NextPart / c3Lvl);
-
-
-
-	c4AgiPart = math.floor((c4Agi % 256)/128); -- Used for bugged knife calc
-	c4StrM = math.floor((c4Str*c4Lvl)/128); --lvl*str/128
-	c4MagM = math.floor((c4Mag*c4Lvl)/128); --lvl*mag/128
-	c4AgiM = math.floor((c4Agi*c4Lvl)/128); --lvl*agi/128
-	c4PM = c4StrM + 2; --Physical attack M, ((lvl*str)/128)+2
-	c4MM = math.floor((c4MagM/2)) +4; --Magic attack M, ((lvl*mag)/256)+4
-	c4KM = c4PM + c4AgiPart; --Knife/Bow M, ((lvl*str)/128) + (((lvl*agi)%256)/128) +2, or Phys M + (agiPart/128)
-	c4BM = c4MagM + c4AgiM +2; --Bell M, ((lvl*mag)/128) + ((lvl*agi)/128) +2
-	c4CM = c4StrM + c4AgiM +2; --Throw/Chicken Knife M, ((lvl*str)/128) + ((lvl*agi)/128) +2
-	c4FM = math.floor((c4StrM/2))+2; --Unarmed M, ((lvl*str)/256)+2
-	c4CanM = math.floor((c4Lvl * c4Lvl)/256) +4; -- M for cannons, lvl^2/256 +4
-
-	--(strM+1 * 128) / Str to get next level
-	--(strM_1 * 128) / lvl to get next str
-	c4NextPart = (c4StrM + 1)*128;
-	c4NextLevel = math.ceil(c4NextPart / c4Str);
-	c4NextStrength = math.ceil(c4NextPart / c4Lvl);
+	for i=1,4 do
+		addresses[i] = {};
+	end
 
 	if version == "GBA-US" then
-		gui.text(0,textHeight*1,"Char 1: Phys: " .. c1PM .. " Mag: " .. c1MM .. " Knife: " .. c1KM .. " Bell: " .. c1BM .. " CK: " ..c1CM .. " Brawl: " .. c1FM .. " Cannon: " .. c1CanM);	
-	else
-		gui.text(0,textHeight*1,"Char 1: Phys: " .. c1PM .. " Mag: " .. c1MM .. " Knife: " .. c1KM .. " Bell: " .. c1BM .. " CK: " ..c1CM .. " Brawl: " .. c1FM);
-	end
-	gui.text(0,textHeight*2,"Next at level: +" .. c1NextLevel-c1Lvl .. "(" .. c1NextLevel .. ") or str +" .. c1NextStrength-c1Str .. "(" .. c1NextStrength .. ")");
+	addresses[1][1]  = 0x0200DAEE; -- char 1 str
+	addresses[1][2]  = 0x0200DAEF; -- agi
+	addresses[1][3]  = 0x0200DAF1; -- mag
+	addresses[1][4]  = 0x0200DABE; -- lvl
+	addresses[1][5]  = 0x0200DABD; -- job
+	addresses[1][6]  = 0x0200DADE; -- abil 1
+	addresses[1][7]  = 0x0200DADD; -- abil 2
+	addresses[1][8]  = 0x0200DADF; -- abil 3
+	addresses[1][9]  = 0x0200DAD6; -- r wep
+	addresses[1][10] = 0x0200DAD8; -- l wep
 
-	if version == "GBA-US" then
-		gui.text(0,textHeight*4,"Char 2: Phys: " .. c2PM .. " Mag: " .. c2MM .. " Knife: " .. c2KM .. " Bell: " .. c2BM .. " CK: " ..c2CM .. " Brawl: " .. c2FM .. " Cannon: " .. c2CanM);
-	else
-		gui.text(0,textHeight*4,"Char 2: Phys: " .. c2PM .. " Mag: " .. c2MM .. " Knife: " .. c2KM .. " Bell: " .. c2BM .. " CK: " ..c2CM .. " Brawl: " .. c2FM);
-	end
-	gui.text(0,textHeight*5,"Next at level: +" .. c2NextLevel-c2Lvl .. "(" .. c2NextLevel .. ") or str +" .. c2NextStrength-c2Str .. "(" .. c2NextStrength .. ")");
+	addresses[2][1]  = 0x0200DB52; -- char 2 str
+	addresses[2][2]  = 0x0200DB53; -- agi
+	addresses[2][3]  = 0x0200DB55; -- mag
+	addresses[2][4]  = 0x0200DB22; -- lvl
+	addresses[2][5]  = 0x0200DB21; -- job
+	addresses[2][6]  = 0x0200DB42; -- abil 1
+	addresses[2][7]  = 0x0200DB41; -- abil 2
+	addresses[2][8]  = 0x0200DB43; -- abil 3
+	addresses[2][9]  = 0x0200DB3A; -- r wep
+	addresses[2][10] = 0x0200DB3C; -- l wep
 
-	if version == "GBA-US" then
-		gui.text(0,textHeight*7,"Char 3: Phys: " .. c3PM .. " Mag: " .. c3MM .. " Knife: " .. c3KM .. " Bell: " .. c3BM .. " CK: " ..c3CM .. " Brawl: " .. c3FM .. " Cannon: " .. c3CanM);
-	else
-		gui.text(0,textHeight*7,"Char 3: Phys: " .. c3PM .. " Mag: " .. c3MM .. " Knife: " .. c3KM .. " Bell: " .. c3BM .. " CK: " ..c3CM .. " Brawl: " .. c3FM);
-	end
-	gui.text(0,textHeight*8,"Next at level: +" .. c3NextLevel-c3Lvl .. "(" .. c3NextLevel .. ") or str +" .. c3NextStrength-c3Str .. "(" .. c3NextStrength .. ")");
+	addresses[3][1]  = 0x0200DBB6; -- char 3 str
+	addresses[3][2]  = 0x0200DBB7; -- agi
+	addresses[3][3]  = 0x0200DBB9; -- mag
+	addresses[3][4]  = 0x0200DB86; -- lvl
+	addresses[3][5]  = 0x0200DB85; -- job
+	addresses[3][6]  = 0x0200DBA6; -- abil 1
+	addresses[3][7]  = 0x0200DBA5; -- abil 2
+	addresses[3][8]  = 0x0200DBA7; -- abil 3
+	addresses[3][9]  = 0x0200DB9E; -- r wep
+	addresses[3][10] = 0x0200DBA0; -- l wep
 
-	if version == "GBA-US" then
-		gui.text(0,textHeight*10,"Char 4: Phys: " .. c4PM .. " Mag: " .. c4MM .. " Knife: " .. c4KM .. " Bell: " .. c4BM .. " CK: " ..c4CM .. " Brawl: " .. c4FM .. " Cannon: " .. c4CanM);
-	else
-		gui.text(0,textHeight*10,"Char 4: Phys: " .. c4PM .. " Mag: " .. c4MM .. " Knife: " .. c4KM .. " Bell: " .. c4BM .. " CK: " ..c4CM .. " Brawl: " .. c4FM);
-	end
-	gui.text(0,textHeight*11,"Next at level: +" .. c4NextLevel-c4Lvl .. "(" .. c4NextLevel .. ") or str +" .. c4NextStrength-c4Str .. "(" .. c4NextStrength .. ")");
+	addresses[4][1]  = 0x0200DC1A; -- char 1 str
+	addresses[4][2]  = 0x0200DC1B; -- agi
+	addresses[4][3]  = 0x0200DC1D; -- mag
+	addresses[4][4]  = 0x0200DBEA; -- lvl
+	addresses[4][5]  = 0x0200EBE9; -- job
+	addresses[4][6]  = 0x0200DC0A; -- abil 1
+	addresses[4][7]  = 0x0200DC09; -- abil 2
+	addresses[4][8]  = 0x0200DC0B; -- abil 3
+	addresses[4][9]  = 0x0200DC02; -- r wep
+	addresses[4][10] = 0x0200DC04; -- l wep
 
+	elseif version == "SNES" then 
+	addresses[1][1]  = 0x0528; -- char 1 str
+	addresses[1][2]  = 0x0529; -- agi
+	addresses[1][3]  = 0x052B; -- mag
+	addresses[1][4]  = 0x0502; -- lvl
+	addresses[1][5]  = 0x0501; -- job
+	addresses[1][6]  = 0x0518; -- abil 1
+	addresses[1][7]  = 0x0517; -- abil 2
+	addresses[1][8]  = 0x0519; -- abil 3
+	addresses[1][9]  = 0x0513; -- r wep
+	addresses[1][10] = 0x0514; -- l wep
+
+	addresses[2][1]  = 0x0578; -- char 2 str
+	addresses[2][2]  = 0x0579; -- agi
+	addresses[2][3]  = 0x057B; -- mag
+	addresses[2][4]  = 0x0552; -- lvl
+	addresses[2][5]  = 0x0551; -- job
+	addresses[2][6]  = 0x0568; -- abil 1
+	addresses[2][7]  = 0x0567; -- abil 2
+	addresses[2][8]  = 0x0569; -- abil 3
+	addresses[2][9]  = 0x0563; -- r wep
+	addresses[2][10] = 0x0564; -- l wep
+
+	addresses[3][1]  = 0x05C8; -- char 3 str
+	addresses[3][2]  = 0x05C9; -- agi
+	addresses[3][3]  = 0x05CB; -- mag
+	addresses[3][4]  = 0x05A2; -- lvl
+	addresses[3][5]  = 0x05A1; -- job
+	addresses[3][6]  = 0x05B8; -- abil 1
+	addresses[3][7]  = 0x05B7; -- abil 2
+	addresses[3][8]  = 0x05B9; -- abil 3
+	addresses[3][9]  = 0x05B3; -- r wep
+	addresses[3][10] = 0x05B4; -- l wep
+
+	addresses[4][1]  = 0x0618; -- char 4 str
+	addresses[4][2]  = 0x0619; -- agi
+	addresses[4][3]  = 0x061B; -- mag
+	addresses[4][4]  = 0x05F2; -- lvl
+	addresses[4][5]  = 0x05F1; -- job
+	addresses[4][6]  = 0x0608; -- abil 1
+	addresses[4][7]  = 0x0607; -- abil 2
+	addresses[4][8]  = 0x0609; -- abil 3
+	addresses[4][9]  = 0x0603; -- r wep
+	addresses[4][10] = 0x0604; -- l wep
+	end
+
+
+function detectJobs()
+
+	for i=1,4 do
+		chars[i][2] = true; -- Display knives for now.
+		job = memory.readbyte(addresses[i][5]);
+
+		if job == 0x00 then --Knight, set Rune
+			chars[i][6] = true;
+		end
+
+		if job == 0x01 then -- Monk, set brawl, disable knife
+			chars[i][2] = false; --disable knife
+			chars[i][4] = true; --show brawl
+		end
+
+		if job == 0x06 then -- Zerk, set Rune
+			chars[i][6] = true;
+		end
+
+		if job == 0x07 then -- Ranger, set Magic (for !Animals)
+			chars[i][1] = true;
+		end
+
+		if job == 0x08 then -- Mystic Knight, set Rune
+			chars[i][6] = true;
+		end
+
+		if job >= 0x09 then -- Jobs ID >= 9 are (almost) all mages. Gladiator and Cannoneer will disable this when it gets to them.
+			chars[i][1] = true;
+		end
+
+		if job == 0x09 then -- White Mage loses knives
+			chars[i][2] = false;
+		end
+
+		if job == 0x0D then -- Blue Mage gets Rune
+			chars[i][6] = true;
+		end
+
+		if job == 0x0E then -- Red Mage also gets Rune
+			chars [i][6] = true;
+		end
+
+		if job == 0x11 then -- Geomancer gets rune bell.
+			chars[i][6] = true;
+		end
+
+		if job == 0x16 then -- Cannnoneer gets cannon and loses magic
+			chars[i][1] = false;
+			chars[i][5] = true;
+		end
+
+		if job == 0x17 then --Gladiator loses magic, but gets rune
+			chars[i][1] = false;
+			chars[i][6] = true;
+		end
+
+		if job == 0x18 then -- Mime gets all three ability slots checked.
+			chars[i][7] = true; --check ability slot 2 (usually the job-based one)
+			chars[i][8] = true; --check ability slot 3 (usually !Item)
+		end
+
+		if job == 0x19 then -- Freelancer gets rune, bell, and ability 2
+			chars[i][3] = true;
+			chars[i][6] = true;
+			chars[i][7] = true;
+		end
+	end -- end for
+
+end --end detectJobs()
+
+function detectAbilities()
+
+	for i=1,4 do
+		abl1 = memory.readbyte(addresses[i][6]);
+		abl2 = 0;
+		abl3 = 0;
+		if chars[i][7] == true then
+			abl2 = memory.readbyte(addresses[i][7]);
+		end
+		if chars[i][8] == true then
+			abl3 = memory.readbyte(addresses[i][8]);
+		end
+
+		if chars[i][2] == false then -- only check knife abilities if knife is false.
+			
+			if abl1 == 0x87 then
+				chars [i][2] = true;
+			end
+
+			if abl2 == 0x87 then
+				chars [i][2] = true;
+			end
+
+			if abl3 == 0x87 then
+				chars [i][2] = true;
+			end
+
+			if abl1 == 0x88 then
+				chars[i][2] = true;
+			end
+
+			if abl2 == 0x88 then
+				chars[i][2] = true;
+			end
+
+			if abl3 == 0x88 then
+				chars[i][2] = true;
+			end
+		end -- end knife check
+
+		if chars [i][1] == false then -- check mag if it's false
+			if abl1 >= 0x32 then 
+				if abl1 <= 0x5E then
+					chars [i][1] = true;
+				end
+			end
+
+			if abl1 == 0x9F then
+				chars[i][1] = true;
+			end
+
+			if abl2 >= 0x32 then
+				if abl2 <= 0x5E then
+					chars [i][1] = true;
+				end
+			end
+
+			if abl2 == 0x9F then
+				chars[i][1] = true;
+			end
+
+			if abl3 >= 0x32 then
+				if abl3 <= 0x5E then
+					chars [i][1] = true;
+				end
+			end
+
+			if abl3 == 0x9F then
+				chars[i][1] = true;
+			end
+		end -- end mag check
+
+		if chars[i][4] == false then -- check brawl if it's false based on class
+			if abl1 == 0x90 then
+				chars[i][4] = true;
+			end
+
+			if abl2 == 0x90 then
+				chars[i][4] = true;
+			end
+
+			if abl3 == 0x90 then
+				chars[i][4] = true;
+			end
+		end
+
+		if chars[i][5] == false then --check for cannon
+			if abl1 == 0x5F then
+				chars[i][5] = true;
+			end
+
+			if abl1 == 0x60 then
+				chars[i][5] = true;
+			end
+
+			if abl2 == 0x5F then
+				chars[i][5] = true;
+			end
+
+			if abl2 == 0x60 then
+				chars[i][5] = true;
+			end
+			
+
+			if abl3 == 0x5F then
+				chars[i][5] = true;
+			end
+
+			if abl3 == 0x60 then
+				chars[i][5] = true;
+			end
+		end
+
+		if chars[i][6] == false then --finally, check for rune
+
+			if abl1 == 0x83 then
+				chars[i][6] = true;
+			end
+
+			if abl1 == 0x86 then
+				chars[i][6] = true;
+			end
+
+			if abl2 == 0x83 then
+				chars[i][6] = true;
+			end
+
+			if abl2 == 0x86 then
+				chars[i][6] = true;
+			end
+
+			if abl3 == 0x83 then
+				chars[i][6] = true;
+			end
+
+			if abl3 == 0x86 then
+				chars[i][6] = true;
+			end
+		end
+	end -- end for
+end --end detectAbilities()
+
+function drawText()
+
+ 	for i=0,5 do
+ 		gui.text(0,textHeight*(i+1),strings[(4*i)+1]);
+		gui.text(0,textHeight*(i+8),strings[(4*i)+2]);
+		gui.text(0,textHeight*(i+15),strings[(4*i)+3]);
+		gui.text(0,textHeight*(i+22),strings[(4*i)+4]);
+	end
+end
+
+function clearStrings()
+	for i=1,24 do
+		strings[i] = nil;
+	end
+end
+
+function computeMult()
+	-- Read stats and level
+	for i=1,24 do
+		strings[i] = "";
+	end
+	for i=1,4 do
+		lvl = memory.readbyte(addresses[i][4]);
+		str = memory.readbyte(addresses[i][1]);
+		agi = memory.readbyte(addresses[i][2]);
+		mag = memory.readbyte(addresses[i][3]);
+		physM = math.floor(((lvl*str)/128)+2);
+		nextLvl = math.ceil(((physM-1)*128)/str);
+		nextStr = math.ceil(((physM-1)*128)/lvl);
+		strings[i]   = "Char " .. i .. " phys: " .. physM;
+        strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
+
+        if chars[i][2] then --if knife M is to be displayed
+			knifeBonus = math.floor(((lvl*agi)%256)/128);
+			-- Calculate when bonus flips
+			nextLvl = math.ceil(((math.floor((lvl*agi)/128)+1)*128)/agi);
+			nextAgi = math.ceil(((math.floor((lvl*agi)/128)+1)*128)/lvl);
+			if knifeBonus == 1 then
+				strings[i] = strings[i] .. "+";
+				strings[i+8] = "Lose knife bonus at lvl +" .. nextLvl-lvl .. "(" ..nextLvl..") or agi +" ..nextAgi-agi .. "(" .. nextAgi ..")";
+			else
+				strings[i] = strings[i] .. "-";
+				strings[i+8] = "Gain knife bonus at lvl +" .. nextLvl-lvl .. "(" ..nextLvl..") or agi +" ..nextAgi-agi .. "(" .. nextAgi ..")";
+			end
+		end
+		
+		if chars[i][1] then --if mag M is to be displayed
+			magM = math.floor(((lvl*mag)/256)+4);
+			nextLvl = math.ceil(((magM-3)*256)/mag);
+			nextMag = math.ceil(((magM-3)*256)/lvl);
+			strings[i] = strings[i] .. " Mag: " .. magM;
+			strings[i+12] = "Mag: next lvl +" .. nextLvl-lvl .. "(" .. nextLvl ..") or mag +" .. nextMag - mag .. "(" ..nextMag ..")";
+		end
+
+		if chars[i][3] then --if bell M is to be displayed
+			bellM = math.floor(((lvl*agi)/128) + ((lvl*mag)/128));
+			strings[i] = strings[i] .. " Bell: " ..bellM;
+			--Not going to deal with when the multi-stat weapons get their next M.
+		end
+
+		if chars[i][4] then --if brawl M is to be displayed
+			brawlM = math.floor((lvl*str)/256)+2;
+			nextLvl = math.ceil(((brawlM-1)*256)/str);
+			nextStr = math.ceil(((brawlM-1)*256)/lvl);
+			strings[i] = strings[i] .. " Brawl: " .. brawlM;
+			strings[i+16] = "Brawl: next lvl +"  ..nextLvl - lvl .. "(" .. nextLvl ..") or str +" .. nextStr-str .. "(" ..nextStr ..")";
+		end
+
+		if chars[i][5] then --if cannon M is to be displayed
+			cannonM = math.floor((lvl*lvl)/256);
+			nextLvl = math.ceil(math.sqrt(cannonM+1));
+			strings[i] = strings[i] .. " Cannon: " .. cannonM;
+			strings[i+20] = "Cannon: next lvl +" .. nextLvl-lvl .. "(" .. nextLvl ..")";
+		end
+
+		if chars[i][6] then --if rune M is to be displayed
+			runeM = math.floor((str*lvl)/128) + math.floor((mag*lvl)/128) + 2;
+			strings[i] = strings[i] .. " Rune: " .. runeM;
+		end
+
+		if chars[i][2] then --if knife M is to be displayed, handle Chicken Knife
+			chickenM = math.floor((str*lvl)/128) + math.floor((agi*lvl)/128) +2
+			strings[i] = strings[i] .. " Chicken/Throw: " .. chickenM;
+		end
+	end -- end for
+end -- end computeMult()
+
+while true do
+
+	detectJobs();
+	detectAbilities();
+	computeMult();
+	drawText();
+	clearStrings();
 	emu.frameadvance();
+
 end
