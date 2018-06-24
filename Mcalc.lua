@@ -7,6 +7,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 
 
 	-- Initial variable setup.
+	client.SetClientExtraPadding(480,0,0,0); -- Adds a 480 pixel border on the left to display the text into.
 	mag = false;
 	knife = true;
 	bell = false;
@@ -20,7 +21,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	chars = {};
 	for i=1,4 do
 		chars[i] = {}
-		for j=1,8 do
+		for j=0,8 do
 			chars[i][j] = false; --Fill the array with false, only display what is needed.
 		end
 	end
@@ -65,11 +66,11 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	addresses[3][9]  = 0x0200DB9E; -- r wep
 	addresses[3][10] = 0x0200DBA0; -- l wep
 
-	addresses[4][1]  = 0x0200DC1A; -- char 1 str
+	addresses[4][1]  = 0x0200DC1A; -- char 4 str
 	addresses[4][2]  = 0x0200DC1B; -- agi
 	addresses[4][3]  = 0x0200DC1D; -- mag
 	addresses[4][4]  = 0x0200DBEA; -- lvl
-	addresses[4][5]  = 0x0200EBE9; -- job
+	addresses[4][5]  = 0x0200DBE9; -- job
 	addresses[4][6]  = 0x0200DC0A; -- abil 1
 	addresses[4][7]  = 0x0200DC09; -- abil 2
 	addresses[4][8]  = 0x0200DC0B; -- abil 3
@@ -127,6 +128,7 @@ function detectJobs()
 
 	for i=1,4 do
 		chars[i][2] = true; -- Display knives for now.
+		chars[i][0] = true; -- Also display row 0
 		job = memory.readbyte(addresses[i][5]);
 
 		if job == 0x00 then --Knight, set Rune
@@ -337,18 +339,45 @@ function detectAbilities()
 end --end detectAbilities()
 
 function drawText()
+	gui.cleartext(); -- Clear all text.
 
- 	for i=0,5 do
- 		gui.text(0,textHeight*(i+1),strings[(4*i)+1]);
-		gui.text(0,textHeight*(i+8),strings[(4*i)+2]);
-		gui.text(0,textHeight*(i+15),strings[(4*i)+3]);
-		gui.text(0,textHeight*(i+22),strings[(4*i)+4]);
+	for i=1,4 do -- Display initial status lines
+		gui.text(0,(textHeight*7*(i-1))+textHeight,strings[i]);
 	end
+
+	for i=5,8 do -- Display standard next M at line
+		gui.text(0,(textHeight*7*(i-5))+(textHeight*2),strings[i]);
+	end
+
+	for i=9,12 do -- Display knife bonus, if needed
+		if chars[i-8][2] == true then
+			gui.text(0,textHeight*7*(i-9)+(textHeight*3),strings[i]);
+		end --end if
+	end --end for
+
+	for i=13,16 do -- Display mag bonus, if needed
+		if chars[i-12][1] == true then
+			gui.text(0,textHeight*7*(i-13)+(textHeight*4),strings[i]);
+		end --end if
+	end --end for
+
+	for i=17,20 do -- Display brawl bonus, if needed
+		if chars[i-16][4] == true then
+			gui.text(0,textHeight*7*(i-17)+(textHeight*5),strings[i]);
+		end --end if
+	end --end for
+
+	for i=21,24 do -- Display cannon bonus, if needed
+		if chars[i-20][5] == true then
+			gui.text(0,textHeight*7*(i-21)+(textHeight*6),strings[i]);
+		end --end if
+	end --end for
+
 end
 
 function clearStrings()
 	for i=1,24 do
-		strings[i] = nil;
+		strings[i] = "";
 	end
 end
 
@@ -365,12 +394,16 @@ function computeMult()
 		physM = math.floor(((lvl*str)/128)+2);
 		nextLvl = math.ceil(((physM-1)*128)/str);
 		nextStr = math.ceil(((physM-1)*128)/lvl);
-		strings[i]   = "Char " .. i .. " phys: " .. physM;
+		strings[i]   = "Job " .. memory.readbyte(addresses[i][5]) .. " phys: " .. physM;
         strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
 
         if chars[i][2] then --if knife M is to be displayed
 			knifeBonus = math.floor(((lvl*agi)%256)/128);
 			-- Calculate when bonus flips
+			-- Hokay. Lvl*agi mod 256 will give us a number 0-255.
+			-- If < 128, subtract it from 128, div that by agi/level, and ceiling for when bonus is gained.
+			-- If >= 128, subtract it from 256, div that by agi/level, and ceiling for when bonus is lost.
+			-- Or just ((knifeBonus+1)*128) - ((agi*lvl)%256), div agi/level, and ceiling.
 			nextLvl = math.ceil(((math.floor((lvl*agi)/128)+1)*128)/agi);
 			nextAgi = math.ceil(((math.floor((lvl*agi)/128)+1)*128)/lvl);
 			if knifeBonus == 1 then
@@ -418,18 +451,27 @@ function computeMult()
 
 		if chars[i][2] then --if knife M is to be displayed, handle Chicken Knife
 			chickenM = math.floor((str*lvl)/128) + math.floor((agi*lvl)/128) +2
-			strings[i] = strings[i] .. " Chicken/Throw: " .. chickenM;
+			strings[i] = strings[i] .. " Chicken: " .. chickenM;
 		end
 	end -- end for
 end -- end computeMult()
 
-while true do
+function refresh()
+	for i=1,4 do
+		for j=0,8 do
+			chars[i][j] = false;
+		end
+	end
+end
 
+while true do
+	refresh();
 	detectJobs();
 	detectAbilities();
 	computeMult();
+	
 	drawText();
-	clearStrings();
+	
 	emu.frameadvance();
 
 end
