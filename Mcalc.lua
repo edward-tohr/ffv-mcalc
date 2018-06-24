@@ -1,4 +1,5 @@
 textHeight = 16; --change this if the text doesn't print out properly
+padding = 480; -- value, in pixels, to add onto the left border to display the text. Adjustable up here if you want more or less.
 version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
@@ -7,7 +8,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 
 
 	-- Initial variable setup.
-	client.SetClientExtraPadding(480,0,0,0); -- Adds a 480 pixel border on the left to display the text into.
+	client.SetClientExtraPadding(padding,0,0,0); -- Adds a border on the left to display the text into.
 	mag = false;
 	knife = true;
 	bell = false;
