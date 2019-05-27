@@ -1,6 +1,6 @@
 textHeight = 16; --change this if the text doesn't print out properly
 padding = 480; -- value, in pixels, to add onto the left border to display the text. Adjustable up here if you want more or less.
-version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
+version = "SNES"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
 
@@ -19,6 +19,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	abl3 = false;
 	strings = {};
 	jobs = {"KNT","MNK","THF","DRG","NIN","SAM","ZRK","RNG","MYS","WHM","BLK","TIM","SUM","BLU","RED","BST","CHM","GEO","BRD","DAN","NEC","ORA","CAN","GLD","MIM","N/A"};
+	mimeOffset = 0; -- Since the GBA version adds new jobs before the end of the list, we need a hacky workaround to support SNES version.
 
 	chars = {};
 	for i=1,4 do
@@ -80,6 +81,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	addresses[4][10] = 0x0200DC04; -- l wep
 
 	elseif version == "SNES" then 
+		mimeOffset = 4;
 	addresses[1][1]  = 0x0528; -- char 1 str
 	addresses[1][2]  = 0x0529; -- agi
 	addresses[1][3]  = 0x052B; -- mag
@@ -132,6 +134,9 @@ function detectJobs()
 		chars[i][2] = true; -- Display knives for now.
 		chars[i][0] = true; -- Also display row 0
 		job = memory.readbyte(addresses[i][5]);
+		if (version == "SNES" and job >= 20 ) then -- Need to adjust job slots for SNES
+			job = job + mimeOffset;
+		end
 
 		if job == 0x00 then --Knight, set Rune
 			chars[i][6] = true;
@@ -396,7 +401,7 @@ function computeMult()
 		physM = math.floor(((lvl*str)/128)+2);
 		nextLvl = math.ceil(((physM-1)*128)/str);
 		nextStr = math.ceil(((physM-1)*128)/lvl);
-		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1)] .. " phys: " .. physM;
+		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1 + mimeOffset)] .. " phys: " .. physM;
         strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
 
         if chars[i][2] then --if knife M is to be displayed
