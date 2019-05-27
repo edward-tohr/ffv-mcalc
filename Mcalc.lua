@@ -20,6 +20,7 @@ version = "SNES"; -- Change this based on which version you're using. Not sure i
 	strings = {};
 	jobs = {"KNT","MNK","THF","DRG","NIN","SAM","ZRK","RNG","MYS","WHM","BLK","TIM","SUM","BLU","RED","BST","CHM","GEO","BRD","DAN","NEC","ORA","CAN","GLD","MIM","N/A"};
 	mimeOffset = 0; -- Since the GBA version adds new jobs before the end of the list, we need a hacky workaround to support SNES version.
+	jobOffset = 0;
 
 	chars = {};
 	for i=1,4 do
@@ -175,7 +176,8 @@ function detectJobs()
 			chars [i][6] = true;
 		end
 
-		if job == 0x11 then -- Geomancer gets rune bell.
+		if job == 0x11 then -- Geomancer gets rune and bell.
+			chars[i][3] = true;
 			chars[i][6] = true;
 		end
 
@@ -389,11 +391,15 @@ function clearStrings()
 end
 
 function computeMult()
+	joboffset = 0;
 	-- Read stats and level
 	for i=1,24 do
 		strings[i] = "";
 	end
 	for i=1,4 do
+		if memory.readbyte(addresses[i][5]) >= 20 then
+		joboffset = mimeOffset;
+		end
 		lvl = memory.readbyte(addresses[i][4]);
 		str = memory.readbyte(addresses[i][1]);
 		agi = memory.readbyte(addresses[i][2]);
@@ -401,7 +407,7 @@ function computeMult()
 		physM = math.floor(((lvl*str)/128)+2);
 		nextLvl = math.ceil(((physM-1)*128)/str);
 		nextStr = math.ceil(((physM-1)*128)/lvl);
-		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1 + mimeOffset)] .. " phys: " .. physM;
+		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1 + joboffset)] .. " phys: " .. physM;
         strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
 
         if chars[i][2] then --if knife M is to be displayed
