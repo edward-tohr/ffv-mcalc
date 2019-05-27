@@ -1,6 +1,10 @@
 # ffv-mcalc
 Calculates and displays M values for FF5.
 
+Presently works with SNES and GBA versions.
+
+Requires version 2.2 or higher of https://github.com/TASVideos/BizHawk/releases
+
 TODO:
 
 - ~~"next M at" for the rest of the M values~~
