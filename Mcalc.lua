@@ -18,6 +18,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	abl2 = false;
 	abl3 = false;
 	strings = {};
+	jobs = {"KNT","MNK","THF","DRG","NIN","SAM","ZRK","RNG","MYS","WHM","BLK","TIM","SUM","BLU","RED","BST","CHM","GEO","BRD","DAN","NEC","ORA","CAN","GLD","MIM","N/A"};
 
 	chars = {};
 	for i=1,4 do
@@ -395,7 +396,7 @@ function computeMult()
 		physM = math.floor(((lvl*str)/128)+2);
 		nextLvl = math.ceil(((physM-1)*128)/str);
 		nextStr = math.ceil(((physM-1)*128)/lvl);
-		strings[i]   = "Job " .. memory.readbyte(addresses[i][5]) .. " phys: " .. physM;
+		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1)] .. " phys: " .. physM;
         strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
 
         if chars[i][2] then --if knife M is to be displayed
