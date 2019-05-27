@@ -145,7 +145,7 @@ function detectJobs()
 
 		if job == 0x01 then -- Monk, set brawl, disable knife
 			chars[i][2] = false; --disable knife
-			chars[i][4] = true; --show brawl
+			--chars[i][4] = true; --show brawl
 		end
 
 		if job == 0x06 then -- Zerk, set Rune
@@ -277,19 +277,19 @@ function detectAbilities()
 			end
 		end -- end mag check
 
-		if chars[i][4] == false then -- check brawl if it's false based on class
-			if abl1 == 0x90 then
-				chars[i][4] = true;
-			end
+		--if chars[i][4] == false then -- check brawl if it's false based on class
+		--	if abl1 == 0x90 then
+		--		chars[i][4] = true;
+		--	end
 
-			if abl2 == 0x90 then
-				chars[i][4] = true;
-			end
+		--	if abl2 == 0x90 then
+		--		chars[i][4] = true;
+		--	end
 
-			if abl3 == 0x90 then
-				chars[i][4] = true;
-			end
-		end
+		--	if abl3 == 0x90 then
+		--		chars[i][4] = true;
+		--	end
+		--end
 
 		if chars[i][5] == false then --check for cannon
 			if abl1 == 0x5F then
@@ -370,11 +370,11 @@ function drawText()
 		end --end if
 	end --end for
 
-	for i=17,20 do -- Display brawl bonus, if needed
-		if chars[i-16][4] == true then
-			gui.text(0,textHeight*7*(i-17)+(textHeight*5),strings[i]);
-		end --end if
-	end --end for
+	--for i=17,20 do -- Display brawl bonus, if needed
+	--	if chars[i-16][4] == true then
+	--		gui.text(0,textHeight*7*(i-17)+(textHeight*5),strings[i]);
+	--	end --end if
+	--end --end for
 
 	for i=21,24 do -- Display cannon bonus, if needed
 		if chars[i-20][5] == true then
@@ -442,13 +442,15 @@ function computeMult()
 			--Not going to deal with when the multi-stat weapons get their next M.
 		end
 
-		if chars[i][4] then --if brawl M is to be displayed
-			brawlM = math.floor((lvl*str)/256)+2;
-			nextLvl = math.ceil(((brawlM-1)*256)/str);
-			nextStr = math.ceil(((brawlM-1)*256)/lvl);
-			strings[i] = strings[i] .. " Brawl: " .. brawlM;
-			strings[i+16] = "Brawl: next lvl +"  ..nextLvl - lvl .. "(" .. nextLvl ..") or str +" .. nextStr-str .. "(" ..nextStr ..")";
-		end
+		--No need for brawl, uses phys M.
+
+		--if chars[i][4] then --if brawl M is to be displayed
+		--	brawlM = math.floor((lvl*str)/256)+2;
+		--	nextLvl = math.ceil(((brawlM-1)*256)/str);
+		--	nextStr = math.ceil(((brawlM-1)*256)/lvl);
+		--	strings[i] = strings[i] .. " Brawl: " .. brawlM;
+		--	strings[i+16] = "Brawl: next lvl +"  ..nextLvl - lvl .. "(" .. nextLvl ..") or str +" .. nextStr-str .. "(" ..nextStr ..")";
+		--end
 
 		if chars[i][5] then --if cannon M is to be displayed
 			cannonM = math.floor((lvl*lvl)/256);
