@@ -1,6 +1,6 @@
 textHeight = 16; --change this if the text doesn't print out properly
 padding = 480; -- value, in pixels, to add onto the left border to display the text. Adjustable up here if you want more or less.
-version = "SNES"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
+version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
 
@@ -437,7 +437,7 @@ function computeMult()
 		end
 
 		if chars[i][3] then --if bell M is to be displayed
-			bellM = math.floor(((lvl*agi)/128) + ((lvl*mag)/128));
+			bellM = math.floor(((lvl*agi)/128) + ((lvl*mag)/128)) + 2;
 			strings[i] = strings[i] .. " Bell: " ..bellM;
 			--Not going to deal with when the multi-stat weapons get their next M.
 		end
