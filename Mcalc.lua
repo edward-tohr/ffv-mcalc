@@ -1,6 +1,6 @@
 textHeight = 16; --change this if the text doesn't print out properly
 padding = 480; -- value, in pixels, to add onto the left border to display the text. Adjustable up here if you want more or less.
-version = "GBA-US"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
+version = "SNES"; -- Change this based on which version you're using. Not sure if EU/JP versions have different addresses.
 --Valid version strings are "GBA-US and SNES"
 
 
@@ -18,7 +18,7 @@ version = "GBA-US"; -- Change this based on which version you're using. Not sure
 	abl2 = false;
 	abl3 = false;
 	strings = {};
-	jobs = {"KNT","MNK","THF","DRG","NIN","SAM","ZRK","RNG","MYS","WHM","BLK","TIM","SUM","BLU","RED","BST","CHM","GEO","BRD","DAN","NEC","ORA","CAN","GLD","MIM","N/A"};
+	jobs = {"KNT","MNK","THF","DRG","NIN","SAM","ZRK","RNG","MYS","WHM","BLK","TIM","SUM","BLU","RED","BST","CHM","GEO","BRD","DAN","NEC","ORA","CAN","GLD","MIM","FRE"};
 	mimeOffset = 0; -- Since the GBA version adds new jobs before the end of the list, we need a hacky workaround to support SNES version.
 	jobOffset = 0;
 
@@ -148,6 +148,10 @@ function detectJobs()
 			chars[i][4] = true; --show brawl
 		end
 
+		if job == 0x04 then -- Ninja, set Magic (for !Throw)
+            chars[i][1] = true;
+        end
+
 		if job == 0x06 then -- Zerk, set Rune
 			chars[i][6] = true;
 		end
@@ -275,6 +279,18 @@ function detectAbilities()
 			if abl3 == 0x9F then
 				chars[i][1] = true;
 			end
+
+			   if abl1 == 0x11 then -- !Throw
+                chars [i][1] = true;
+            end
+ 
+            if abl2 == 0x11 then
+                chars [i][1] = true;
+            end
+ 
+            if abl3 == 0x11 then
+                chars [i][1] = true;
+            end
 		end -- end mag check
 
 		if chars[i][4] == false then -- check brawl if it's false based on class
@@ -391,14 +407,14 @@ function clearStrings()
 end
 
 function computeMult()
-	joboffset = 0;
+	jobOffset = 0;
 	-- Read stats and level
 	for i=1,24 do
 		strings[i] = "";
 	end
 	for i=1,4 do
 		if memory.readbyte(addresses[i][5]) >= 20 then
-		joboffset = mimeOffset;
+		jobOffset = mimeOffset;
 		end
 		lvl = memory.readbyte(addresses[i][4]);
 		str = memory.readbyte(addresses[i][1]);
@@ -407,7 +423,14 @@ function computeMult()
 		physM = math.floor(((lvl*str)/128)+2);
 		nextLvl = math.ceil(((physM-1)*128)/str);
 		nextStr = math.ceil(((physM-1)*128)/lvl);
-		strings[i]   = jobs[(memory.readbyte(addresses[i][5])+1 + joboffset)] .. " phys: " .. physM;
+		jobID = memory.readbyte(addresses[i][5]);
+		jobString = jobs[jobID + jobOffset + 1] .. "("..jobID..")";
+		if (jobID > (17 + jobOffset)) then
+			jobString = "N/A (" .. jobID .. ")";
+			end 
+		
+		
+		strings[i]   = jobString .. " phys: " .. physM;
         strings[i+4] = "Next lvl +" .. nextLvl-lvl .. "("..nextLvl..") or str +" ..nextStr-str.."("..nextStr..")";
 
         if chars[i][2] then --if knife M is to be displayed
