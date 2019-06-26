@@ -407,12 +407,13 @@ function clearStrings()
 end
 
 function computeMult()
-	jobOffset = 0;
+	
 	-- Read stats and level
 	for i=1,24 do
 		strings[i] = "";
 	end
 	for i=1,4 do
+		jobOffset = 0;
 		if memory.readbyte(addresses[i][5]) >= 20 then
 		jobOffset = mimeOffset;
 		end
@@ -501,11 +502,12 @@ function refresh()
 end
 
 while true do
+	if emu.framecount() % 60 == 0 then
 	refresh();
 	detectJobs();
 	detectAbilities();
 	computeMult();
-	
+	end
 	drawText();
 	
 	emu.frameadvance();
